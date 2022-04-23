@@ -31,17 +31,25 @@ public class IndexServlet extends HttpServlet {
     /**
      * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
      */
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        EntityManager em=DBUtil.createEntityManager();
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        EntityManager em = DBUtil.createEntityManager();
 
-        List<Task> tasks=em.createNamedQuery("getAllMessages",Task.class).getResultList();
+        List<Task> tasks = em.createNamedQuery("getAllMessages", Task.class).getResultList();
         response.getWriter().append(Integer.valueOf(tasks.size()).toString());
 
         em.close();
 
         request.setAttribute("tasks", tasks);
 
-        RequestDispatcher rd=request.getRequestDispatcher("/WEB-INF/views/tasks/index.jsp");
+        //フラッシュメッセージがセッションスコープにセットされていたら
+        //リクエストスコープにに保存する(セッションスコープから削除)
+        if (request.getSession().getAttribute("flush") != null) {
+            request.setAttribute("flush", request.getSession().getAttribute("flush"));
+            request.getSession().removeAttribute("flush");
+        }
+
+        RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/views/tasks/index.jsp");
         rd.forward(request, response);
     }
 
